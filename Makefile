@@ -1,5 +1,11 @@
 # Build files from Brainfuck sources
-# $Id$
+# $Id: Makefile,v 1.1 2009/12/21 22:07:26 bernd Exp bernd $
+
+all::
+
+clean::
+	rm -f *.ll *.bc *.s
+	for f in *.bf; do rm -f `basename $$f .bf`; done
 
 %.fasl: %.lisp
 	sbcl --noinform --eval '(compile-file "$<")' --eval '(quit)'
@@ -15,7 +21,3 @@
 
 %: %.s
 	gcc -o $@ $<
-
-clean::
-	rm -f *.ll *.bc *.s
-	for f in *.bf; do rm -f `basename $$f .bf`; done
