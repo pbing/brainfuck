@@ -1,5 +1,5 @@
 ;;; Brainfuck to LLVM compiler
-;;; $Id: brainfuck.lisp,v 1.1 2009/12/21 22:05:35 bernd Exp bernd $
+;;; $Id: brainfuck.lisp,v 1.2 2009/12/23 18:10:36 bernd Exp bernd $
 
 (defpackage "BRAINFUCK"
   (:nicknames "BF")
@@ -38,7 +38,7 @@
 	 (tape1 (incf *tape*)))
     (format stream "~&~4T%tape.~D = load i8* %head.~D ; +~%" tape0 head)
     (format stream "~4T%tape.~D = add i8 %tape.~D, 1~%" tape1 tape0)
-    (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~2%" tape1 head)))
+    (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~%" tape1 head)))
 
 (defun minus (stream)
   (let* ((head *head*)
@@ -46,17 +46,17 @@
 	 (tape1 (incf *tape*)))
     (format stream "~&~4T%tape.~D = load i8* %head.~D ; -~%" tape0 head)
     (format stream "~4T%tape.~D = sub i8 %tape.~D, 1~%" tape1 tape0)
-    (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~2%" tape1 head)))
+    (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~%" tape1 head)))
 
 (defun left (stream)
   (let* ((head0 *head*)
 	 (head1 (incf *head*)))
-    (format stream "~&~4T%head.~D = getelementptr i8* %head.~D, i32 -1 ; <~2%" head1 head0)))
+    (format stream "~&~4T%head.~D = getelementptr i8* %head.~D, i32 -1 ; <~%" head1 head0)))
 
 (defun right (stream)
   (let* ((head0 *head*)
 	 (head1 (incf *head*)))
-    (format stream "~&~4T%head.~D = getelementptr i8* %head.~D, i32 1 ; >~2%" head1 head0)))
+    (format stream "~&~4T%head.~D = getelementptr i8* %head.~D, i32 1 ; >~%" head1 head0)))
 
 (defun dot (stream)
   (let* ((head *head*)
@@ -64,7 +64,7 @@
 	 (tape1 (incf *tape*)))
     (format stream "~&~4T%tape.~D = load i8* %head.~D ; .~%" tape0 head)
     (format stream "~4T%tape.~D = sext i8 %tape.~D to i32~%" tape1 tape0)
-    (format stream "~4Tcall i32 @putchar(i32 %tape.~D)~2%" tape1)))
+    (format stream "~4Tcall i32 @putchar(i32 %tape.~D)~%" tape1)))
 
 (defun comma (stream)
   (let* ((head *head*)
@@ -72,17 +72,17 @@
 	 (tape1 (incf *tape*)))
     (format stream "~&~4T%tape.~D = call i32 @getchar() ; , ~%" tape0)
     (format stream "~4T%tape.~D = trunc i32 %tape.~D to i8~%" tape1 tape0)
-    (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~2%" tape1 head)))
+    (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~%" tape1 head)))
 
 (defun left-bracket (stream)
-    (push *head* *loop-stack*)
-    (push *label* *loop-stack*)
-    (let* ((loop-test (incf *label*))
-	   (loop-body (incf *label*)))
-      (format stream "~&~4Tbr label %main.~D ; [~2%" loop-test)
-      (format stream "main.~D:~%" loop-body)
-      (push loop-test *loop-stack*)
-      (push loop-body *loop-stack*)))
+  (push *head* *loop-stack*)
+  (push *label* *loop-stack*)
+  (let* ((loop-test (incf *label*))
+	 (loop-body (incf *label*)))
+    (format stream "~&~4Tbr label %main.~D ; [~2%" loop-test)
+    (format stream "main.~D:~%" loop-body)
+    (push loop-test *loop-stack*)
+    (push loop-body *loop-stack*)))
 
 (defun right-bracket (stream)
   (let* ((label *label*)
@@ -106,7 +106,8 @@
 
 (defun initialize ()
   (setf *head* 0  *tape* 0
-	*label* 0  *test* 0))
+	*label* 0  *test* 0
+	*loop-stack* '()))
 
 (defun %compile (string &optional (stream t))
   (loop for c across string do
