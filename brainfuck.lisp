@@ -1,5 +1,5 @@
 ;;; Brainfuck to LLVM compiler
-;;; $Id$
+;;; $Id: brainfuck.lisp,v 1.1 2009/12/21 22:05:35 bernd Exp bernd $
 
 (defpackage "BRAINFUCK"
   (:nicknames "BF")
@@ -13,7 +13,7 @@
 (defvar *tape* 0)
 (defvar *label* 0)
 (defvar *test* 0)
-(defvar *loop* '())
+(defvar *loop-stack* '())
 
 (defun llvm-header (stream)
   (let ((head *head*)
@@ -70,26 +70,26 @@
   (let* ((head *head*)
 	 (tape0 (incf *tape*))
 	 (tape1 (incf *tape*)))
-    (format stream "~&~4T%tape.~D = call i32 @getchar() ; ,~%" tape0)
+    (format stream "~&~4T%tape.~D = call i32 @getchar() ; , ~%" tape0)
     (format stream "~4T%tape.~D = trunc i32 %tape.~D to i8~%" tape1 tape0)
     (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~2%" tape1 head)))
 
 (defun left-bracket (stream)
-    (push *head* *loop*)
-    (push *label* *loop*)
+    (push *head* *loop-stack*)
+    (push *label* *loop-stack*)
     (let* ((loop-test (incf *label*))
 	   (loop-body (incf *label*)))
       (format stream "~&~4Tbr label %main.~D ; [~2%" loop-test)
       (format stream "main.~D:~%" loop-body)
-      (push loop-test *loop*)
-      (push loop-body *loop*)))
+      (push loop-test *loop-stack*)
+      (push loop-body *loop-stack*)))
 
 (defun right-bracket (stream)
   (let* ((label *label*)
-	 (loop-body (pop *loop*))
-	 (loop-test (pop *loop*))
-	 (loop-before (pop *loop*))
-	 (head0 (pop *loop*))
+	 (loop-body (pop *loop-stack*))
+	 (loop-test (pop *loop-stack*))
+	 (loop-before (pop *loop-stack*))
+	 (head0 (pop *loop-stack*))
 	 (head1 *head*)
 	 (head2 (incf *head*))
 	 (loop-after (incf *label*))
@@ -97,7 +97,7 @@
 	 (tape (incf *tape*)))
     (format stream "~&~4Tbr label %main.~D ; ]~2%" loop-test)
     (format stream "~&main.~D:~%" loop-test)
-    (format stream "~4T%head.~D = phi i8* [%head.~D, %main.~D],[%head.~D,%main.~D]~%"
+    (format stream "~4T%head.~D = phi i8* [%head.~D, %main.~D], [%head.~D, %main.~D]~%"
 	    head2 head0 loop-before head1 label)
     (format stream "~4T%tape.~D = load i8* %head.~D~%" tape head2)
     (format stream "~4T%test.~D = icmp eq i8 %tape.~D, 0~%" test tape)
