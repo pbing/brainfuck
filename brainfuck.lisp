@@ -1,5 +1,5 @@
 ;;; Brainfuck to LLVM compiler
-;;; $Id: brainfuck.lisp,v 1.2 2009/12/23 18:10:36 bernd Exp bernd $
+;;; $Id: brainfuck.lisp,v 1.3 2009/12/23 19:49:27 bernd Exp bernd $
 
 (defpackage "BRAINFUCK"
   (:nicknames "BF")
@@ -12,6 +12,7 @@
 (defvar *head* 0)
 (defvar *tape* 0)
 (defvar *label* 0)
+(defvar *last-label* 0)
 (defvar *test* 0)
 (defvar *loop-stack* '())
 
@@ -75,38 +76,48 @@
     (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~%" tape1 head)))
 
 (defun left-bracket (stream)
-  (push *head* *loop-stack*)
-  (push *label* *loop-stack*)
-  (let* ((loop-test (incf *label*))
-	 (loop-body (incf *label*)))
+  (let* ((head0 *head*)
+	 (head1 (incf *head*))
+	 (loop-before *last-label*)
+	 (loop-test (incf *label*))
+	 (loop-body (incf *label*))	 
+	 (loop-after (incf *label*)))
     (format stream "~&~4Tbr label %main.~D ; [~2%" loop-test)
-    (format stream "main.~D:~%" loop-body)
+    (format stream "main.~D: ; loop-body~%" loop-body)
+    (push head0 *loop-stack*)
+    (push head1 *loop-stack*)
+    (push loop-before *loop-stack*)
     (push loop-test *loop-stack*)
-    (push loop-body *loop-stack*)))
+    (push loop-body *loop-stack*)
+    (push loop-after *loop-stack*)
+    (setf *last-label* loop-body)))
 
 (defun right-bracket (stream)
-  (let* ((label *label*)
+  (let* ((loop-after (pop *loop-stack*))
 	 (loop-body (pop *loop-stack*))
 	 (loop-test (pop *loop-stack*))
 	 (loop-before (pop *loop-stack*))
+	 (head2 (pop *loop-stack*))
 	 (head0 (pop *loop-stack*))
 	 (head1 *head*)
-	 (head2 (incf *head*))
-	 (loop-after (incf *label*))
-	 (test (incf *test*))
-	 (tape (incf *tape*)))
+	 (head3 (incf *head*))
+	 (last-label *last-label*)
+	 (tape (incf *tape*))
+	 (test (incf *test*)))
     (format stream "~&~4Tbr label %main.~D ; ]~2%" loop-test)
-    (format stream "~&main.~D:~%" loop-test)
+    (format stream "main.~D: ; loop-test~%" loop-test)
     (format stream "~4T%head.~D = phi i8* [%head.~D, %main.~D], [%head.~D, %main.~D]~%"
-	    head2 head0 loop-before head1 label)
+	    head2 head0 loop-before head1 last-label)
     (format stream "~4T%tape.~D = load i8* %head.~D~%" tape head2)
     (format stream "~4T%test.~D = icmp eq i8 %tape.~D, 0~%" test tape)
     (format stream "~4Tbr i1 %test.~D, label %main.~D, label %main.~D~2%" test loop-after loop-body)
-    (format stream "main.~D:~%" loop-after)))
+    (format stream "main.~D: ; loop-after~%" loop-after)
+    (format stream "~4T%head.~D = phi i8* [%head.~D, %main.~D]~%" head3 head2 loop-test)
+    (setf *last-label* loop-after)))
 
 (defun initialize ()
   (setf *head* 0  *tape* 0
-	*label* 0  *test* 0
+	*label* 0  *last-label* 0  *test* 0
 	*loop-stack* '()))
 
 (defun %compile (string &optional (stream t))
