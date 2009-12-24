@@ -1,0 +1,38 @@
+LLVM-2.6
+
+1) UNOPTIMIZED COMPILATION
+
+rm -f mandelbrot
+
+LCCFLAGS=-O0 make mandelbrot
+
+ls -l mandelbrot
+-rwxr-xr-x  1 bernd  bernd  139920 24 Dez 21:57 mandelbrot
+
+time ./mandelbrot > /dev/null
+real	0m5.297s
+user	0m5.292s
+sys	0m0.003s
+
+
+2) OPTIMIZED COMPILATION
+
+rm -f mandelbrot
+
+make mandelbrot
+
+ls -l mandelbrot
+-rwxr-xr-x  1 bernd  bernd  21136 24 Dez 21:49 mandelbrot
+
+time ./mandelbrot > /dev/null
+real	0m1.978s
+user	0m1.970s
+sys	0m0.002s
+
+
+3) RESULT
+
+          unopt   opt
+---------------------
+size       6.6    1.0
+run time   4.4    1.0
