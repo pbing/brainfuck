@@ -7,7 +7,7 @@ Benchmarked with LLVM-2.6.
 
 rm -f mandelbrot
 
-make mandelbrot LCCFLAGS=-O0
+make mandelbrot LLCFLAGS=-O0
 
 ls -l mandelbrot
 -rwxr-xr-x  1 bernd  bernd  139920 24 Dez 21:57 mandelbrot

@@ -1,8 +1,8 @@
 # Build files from Brainfuck sources
-# $Id: Makefile,v 1.4 2009/12/24 20:48:19 bernd Exp bernd $
+# $Id: Makefile,v 1.5 2009/12/24 22:06:54 bernd Exp bernd $
 
 # For non optimized code use
-# make ... LCCFLAGS=-O0
+# make ... LLCFLAGS=-O0
 LLCFLAGS = -O3
 
 .PHONY: all clean
