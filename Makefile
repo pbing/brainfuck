@@ -1,5 +1,9 @@
 # Build files from Brainfuck sources
-# $Id: Makefile,v 1.2 2009/12/21 22:12:07 bernd Exp bernd $
+# $Id: Makefile,v 1.3 2009/12/24 17:02:49 bernd Exp bernd $
+
+# For non optimized code use
+# LCCFLAGS=-O0 make ...
+LLCFLAGS ?= -O3
 
 .PHONY: all clean
 
@@ -17,10 +21,10 @@ clean:
 	sbcl --noinform --load brainfuck.fasl --eval '(bf:compile-file "$<")' --eval '(quit)'
 
 %.bc: %.ll
-	llvm-as < $< | opt -O3 -f -o $@
+	llvm-as -f $<
 
 %.s: %.bc
-	llc -f $<
+	llc $(LLCFLAGS) -f $<
 
 %: %.s
 	gcc -o $@ $<
