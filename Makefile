@@ -1,9 +1,12 @@
 # Build files from Brainfuck sources
-# $Id: Makefile,v 1.1 2009/12/21 22:07:26 bernd Exp bernd $
+# $Id: Makefile,v 1.2 2009/12/21 22:12:07 bernd Exp bernd $
 
-all::
+.PHONY: all clean
 
-clean::
+all:
+	for f in *.bf; do $(MAKE) `basename $$f .bf`; done
+
+clean:
 	rm -f *.ll *.bc *.s
 	for f in *.bf; do rm -f `basename $$f .bf`; done
 
