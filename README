@@ -1,4 +1,7 @@
-LLVM-2.6
+Simple brainfuck to LLVM compiler. Deliberately no optimizations --
+let LLVM handle this.
+
+Benchmarked with LLVM-2.6.
 
 1) UNOPTIMIZED COMPILATION
 
