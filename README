@@ -1,7 +1,7 @@
 Simple brainfuck to LLVM compiler. Deliberately no optimizations --
 let LLVM handle this.
 
-Benchmarked with LLVM-2.7.
+Benchmarked with LLVM-2.8.
 
 1) UNOPTIMIZED COMPILATION
 
@@ -10,12 +10,13 @@ rm -f mandelbrot
 make mandelbrot LLCFLAGS=-O0
 
 ls -l mandelbrot
--rwxr-xr-x  1 bernd  bernd  139920 12 Sep 16:36 mandelbrot
+-rwxr-xr-x  1 bernd  bernd  180880 17 Okt 18:23 mandelbrot
 
 time ./mandelbrot > /dev/null
-real	0m5.285s
-user	0m5.253s
-sys	0m0.007s
+
+real	0m10.309s
+user	0m10.300s
+sys	0m0.003s
 
 
 2) OPTIMIZED COMPILATION
@@ -25,13 +26,12 @@ rm -f mandelbrot
 make mandelbrot
 
 ls -l mandelbrot
--rwxr-xr-x  1 bernd  bernd  29328 12 Sep 16:39 mandelbrot
-
+-rwxr-xr-x  1 bernd  bernd  29328 17 Okt 18:22 mandelbrot
 
 time ./mandelbrot > /dev/null
 
-real	0m1.735s
-user	0m1.727s
+real	0m1.728s
+user	0m1.717s
 sys	0m0.002s
 
 
@@ -39,5 +39,5 @@ sys	0m0.002s
 
           unopt   opt
 ---------------------
-size       4.8    1.0
-run time   3.0    1.0
+size       6.0    1.0
+run time   6.2    1.0
