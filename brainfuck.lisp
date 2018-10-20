@@ -19,17 +19,19 @@
 (defun llvm-header (stream)
   (let ((head *head*)
 	(label *label*))
-    (format stream "~&declare void @llvm.memset.i32(i8* nocapture, i8, i32, i32) nounwind~%~
-                    declare i32 @getchar()~%~
-                    declare i32 @putchar(i32)~2%~
+    (format stream "~&declare void @llvm.memset.i64(i8* nocapture, i8, i64, i1) nounwind~%~
+                    declare i64 @getchar()~%~
+                    declare i64 @putchar(i64)~2%~
+                    declare i8* @malloc(i64)~2%~
+                    declare void @free(i8*)~2%~
                     define void @main() {~%~
                     main.~D:~%~
-                    ~4T%arr = malloc i8, i32 65536~%~
-                    ~4Tcall void @llvm.memset.i32(i8* %arr, i8 0, i32 65536, i32 1)~%~
-                    ~4T%head.~D = getelementptr i8* %arr, i32 32768~2%" label head)))
+                    ~4T%arr = call i8* @malloc(i64 65536)~%~
+                    ~4Tcall void @llvm.memset.i64(i8* %arr, i8 0, i64 65536, i1 1)~%~
+                    ~4T%head.~D = getelementptr i8, i8* %arr, i64 32768~2%" label head)))
 
 (defun llvm-footer (stream)
-  (format stream "~&~4Tfree i8* %arr~%~
+  (format stream "~&~4T call void @free(i8* %arr)~%~
                   ~4Tret void~%~
                   }~%"))
 
@@ -37,7 +39,7 @@
   (let* ((head *head*)
 	 (tape0 (incf *tape*))
 	 (tape1 (incf *tape*)))
-    (format stream "~&~4T%tape.~D = load i8* %head.~D ; +~%" tape0 head)
+    (format stream "~&~4T%tape.~D = load i8, i8* %head.~D ; +~%" tape0 head)
     (format stream "~4T%tape.~D = add i8 %tape.~D, 1~%" tape1 tape0)
     (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~%" tape1 head)))
 
@@ -45,34 +47,34 @@
   (let* ((head *head*)
 	 (tape0 (incf *tape*))
 	 (tape1 (incf *tape*)))
-    (format stream "~&~4T%tape.~D = load i8* %head.~D ; -~%" tape0 head)
+    (format stream "~&~4T%tape.~D = load i8, i8* %head.~D ; -~%" tape0 head)
     (format stream "~4T%tape.~D = sub i8 %tape.~D, 1~%" tape1 tape0)
     (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~%" tape1 head)))
 
 (defun left (stream)
   (let* ((head0 *head*)
 	 (head1 (incf *head*)))
-    (format stream "~&~4T%head.~D = getelementptr i8* %head.~D, i32 -1 ; <~%" head1 head0)))
+    (format stream "~&~4T%head.~D = getelementptr i8, i8* %head.~D, i64 -1 ; <~%" head1 head0)))
 
 (defun right (stream)
   (let* ((head0 *head*)
 	 (head1 (incf *head*)))
-    (format stream "~&~4T%head.~D = getelementptr i8* %head.~D, i32 1 ; >~%" head1 head0)))
+    (format stream "~&~4T%head.~D = getelementptr i8, i8* %head.~D, i64 1 ; >~%" head1 head0)))
 
 (defun dot (stream)
   (let* ((head *head*)
 	 (tape0 (incf *tape*))
 	 (tape1 (incf *tape*)))
-    (format stream "~&~4T%tape.~D = load i8* %head.~D ; .~%" tape0 head)
-    (format stream "~4T%tape.~D = sext i8 %tape.~D to i32~%" tape1 tape0)
-    (format stream "~4Tcall i32 @putchar(i32 %tape.~D)~%" tape1)))
+    (format stream "~&~4T%tape.~D = load i8, i8* %head.~D ; .~%" tape0 head)
+    (format stream "~4T%tape.~D = sext i8 %tape.~D to i64~%" tape1 tape0)
+    (format stream "~4Tcall i64 @putchar(i64 %tape.~D)~%" tape1)))
 
 (defun comma (stream)
   (let* ((head *head*)
 	 (tape0 (incf *tape*))
 	 (tape1 (incf *tape*)))
-    (format stream "~&~4T%tape.~D = call i32 @getchar() ; , ~%" tape0)
-    (format stream "~4T%tape.~D = trunc i32 %tape.~D to i8~%" tape1 tape0)
+    (format stream "~&~4T%tape.~D = call i64 @getchar() ; , ~%" tape0)
+    (format stream "~4T%tape.~D = trunc i64 %tape.~D to i8~%" tape1 tape0)
     (format stream "~4Tstore i8 %tape.~D, i8* %head.~D~%" tape1 head)))
 
 (defun left-bracket (stream)
@@ -108,7 +110,7 @@
     (format stream "main.~D: ; loop-test~%" loop-test)
     (format stream "~4T%head.~D = phi i8* [%head.~D, %main.~D], [%head.~D, %main.~D]~%"
 	    head2 head0 loop-before head1 last-label)
-    (format stream "~4T%tape.~D = load i8* %head.~D~%" tape head2)
+    (format stream "~4T%tape.~D = load i8, i8* %head.~D~%" tape head2)
     (format stream "~4T%test.~D = icmp eq i8 %tape.~D, 0~%" test tape)
     (format stream "~4Tbr i1 %test.~D, label %main.~D, label %main.~D~2%" test loop-after loop-body)
     (format stream "main.~D: ; loop-after~%" loop-after)
