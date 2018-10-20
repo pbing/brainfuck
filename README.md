@@ -1,5 +1,6 @@
-# Simple brainfuck to LLVM compiler. Deliberately no optimizations --
-let LLVM handle this.
+# Simple brainfuck to LLVM compiler
+
+Deliberately no optimizations -- let LLVM handle this.
 
 Benchmarked with LLVM-7.0.0
 
