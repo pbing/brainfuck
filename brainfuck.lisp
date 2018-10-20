@@ -1,5 +1,5 @@
 ;;; Brainfuck to LLVM compiler
-;;; $Id: brainfuck.lisp,v 1.3 2009/12/23 19:49:27 bernd Exp bernd $
+;;; $Id: brainfuck.lisp,v 1.4 2009/12/24 16:57:59 bernd Exp $
 
 (defpackage "BRAINFUCK"
   (:nicknames "BF")
